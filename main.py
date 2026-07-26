@@ -1,61 +1,178 @@
-"""
-CAMADA DE ROTAS (main.py)  —  ESQUELETO, implemente você mesmo
-==============================================================
+from typing import Optional
 
-É o "cardápio" da API: cada rota é um endpoint. Mantenha as rotas FINAS —
-elas só devem:
-  1. receber/validar a entrada (via schemas do Pydantic);
-  2. chamar UMA função do db.py;
-  3. traduzir o resultado em resposta HTTP (status code + corpo).
+from fastapi import FastAPI, HTTPException, Query, Response, status
+from psycopg2.errors import UniqueViolation
 
-Nenhuma regra de negócio ou SQL mora aqui.
-
-Depois de implementar, rode (com o venv ativado e o PostgreSQL no ar):
-    uvicorn main:app --reload
-E explore em: http://127.0.0.1:8000/docs
-"""
-
-# DICA — o que você vai importar:
-#   from typing import List
-#   from fastapi import FastAPI, HTTPException, status
-#   from psycopg2.errors import UniqueViolation   # para tratar duplicidade
-#   import db
-#   from schemas import AlunoEntrada, AlunoAtualizacao, AlunoSaida  # e disciplinas
+import db
+from schemas import (
+    AlunoAtualizacao,
+    AlunoEntrada,
+    AlunoSaida,
+    DisciplinaEntrada,
+    DisciplinaSaida,
+)
 
 
-# TODO: crie a aplicação -> app = FastAPI(title="Gestão de Alunos")
-#       (a variável PRECISA se chamar `app` — é o que o uvicorn procura.)
-
-# TODO: registre o startup para criar as tabelas:
-#   @app.on_event("startup")
-#   def ao_iniciar():
-#       db.criar_tabelas()
-
-# TODO: GET /  -> uma mensagem de boas-vindas (ex.: aponte para /docs).
+app = FastAPI(title="Gestão de Alunos")
 
 
-# ========================= ALUNOS =========================
-# Verbo/rota/status que você deve implementar (o "coração" do REST):
-#
-#   POST   /alunos            -> 201 Created; devolva o objeto criado.
-#                                Trate matrícula duplicada com 409 Conflict
-#                                (except UniqueViolation).
-#   GET    /alunos            -> 200; lista. (Filtros = Desafio 1.)
-#   GET    /alunos/{id}       -> 200 com o aluno, ou 404 se não existir.
-#   PATCH  /alunos/{id}       -> 200; atualização parcial. Dica:
-#                                payload.model_dump(exclude_unset=True).
-#   DELETE /alunos/{id}       -> 204 No Content; 404 se não existir.
-#
-# Lembre: use response_model=AlunoSaida e status_code=status.HTTP_201_CREATED etc.
+@app.on_event("startup")
+def ao_iniciar():
+    db.criar_tabelas()
 
 
-# ========================= DISCIPLINAS (Desafio 2) =========================
-# POST /disciplinas (201, 409 se duplicado) · GET /disciplinas (200) ·
-# DELETE /disciplinas/{id} (204, 404 se não existir).
+@app.get("/")
+def inicio():
+    return {
+        "mensagem": "API de Gestão de Alunos funcionando.",
+        "documentacao": "/docs",
+    }
 
 
-# ========================= MATRÍCULAS (Desafio 3) =========================
-# POST /alunos/{aluno_id}/matricular/{disciplina_id}
-#      -> 404 se aluno OU disciplina não existir; senão matricula.
-# GET  /alunos/{aluno_id}/disciplinas
-#      -> lista as disciplinas do aluno (usa db.disciplinas_do_aluno / JOIN).
+@app.post(
+    "/alunos",
+    response_model=AlunoSaida,
+    status_code=status.HTTP_201_CREATED,
+)
+def criar_aluno(payload: AlunoEntrada):
+    try:
+        return db.inserir_aluno(
+            nome=payload.nome,
+            idade=payload.idade,
+            matricula=payload.matricula,
+            media=payload.media,
+        )
+
+    except UniqueViolation as erro:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Matrícula já cadastrada.",
+        ) from erro
+
+
+@app.get("/alunos", response_model=list[AlunoSaida])
+def listar_alunos(
+    idade_minima: Optional[int] = Query(default=None, ge=0, le=120),
+    media_minima: Optional[float] = Query(default=None, ge=0, le=10),
+    q: Optional[str] = Query(default=None),
+):
+    return db.listar_alunos(
+        idade_minima=idade_minima,
+        media_minima=media_minima,
+        q=q,
+    )
+
+
+@app.get("/alunos/{aluno_id}", response_model=AlunoSaida)
+def buscar_aluno(aluno_id: int):
+    aluno = db.buscar_aluno(aluno_id)
+
+    if aluno is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Aluno não encontrado.",
+        )
+
+    return aluno
+
+
+@app.patch("/alunos/{aluno_id}", response_model=AlunoSaida)
+def atualizar_aluno(aluno_id: int, payload: AlunoAtualizacao):
+    campos = payload.model_dump(exclude_unset=True)
+    aluno = db.atualizar_aluno(aluno_id, **campos)
+
+    if aluno is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Aluno não encontrado.",
+        )
+
+    return aluno
+
+
+@app.delete(
+    "/alunos/{aluno_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+)
+def excluir_aluno(aluno_id: int):
+    if not db.excluir_aluno(aluno_id):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Aluno não encontrado.",
+        )
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@app.post(
+    "/disciplinas",
+    response_model=DisciplinaSaida,
+    status_code=status.HTTP_201_CREATED,
+)
+def criar_disciplina(payload: DisciplinaEntrada):
+    try:
+        return db.inserir_disciplina(
+            nome=payload.nome,
+            carga_horaria=payload.carga_horaria,
+        )
+
+    except UniqueViolation as erro:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Disciplina já cadastrada.",
+        ) from erro
+
+
+@app.get("/disciplinas", response_model=list[DisciplinaSaida])
+def listar_disciplinas():
+    return db.listar_disciplinas()
+
+
+@app.delete(
+    "/disciplinas/{disciplina_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+)
+def excluir_disciplina(disciplina_id: int):
+    if not db.excluir_disciplina(disciplina_id):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Disciplina não encontrada.",
+        )
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@app.post(
+    "/alunos/{aluno_id}/matricular/{disciplina_id}",
+    status_code=status.HTTP_201_CREATED,
+)
+def matricular_aluno(aluno_id: int, disciplina_id: int):
+    if db.buscar_aluno(aluno_id) is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Aluno não encontrado.",
+        )
+
+    if db.buscar_disciplina(disciplina_id) is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Disciplina não encontrada.",
+        )
+
+    return db.matricular(aluno_id, disciplina_id)
+
+
+@app.get(
+    "/alunos/{aluno_id}/disciplinas",
+    response_model=list[DisciplinaSaida],
+)
+def listar_disciplinas_do_aluno(aluno_id: int):
+    if db.buscar_aluno(aluno_id) is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Aluno não encontrado.",
+        )
+
+    return db.disciplinas_do_aluno(aluno_id)
