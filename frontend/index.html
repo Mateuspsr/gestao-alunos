@@ -1,0 +1,228 @@
+<!doctype html>
+
+<html lang="pt-BR">
+
+<head>
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
+  <title>
+    Gestão de Alunos
+  </title>
+
+  <link
+    rel="stylesheet"
+    href="styles.css"
+  >
+</head>
+
+<body>
+
+  <main class="container">
+
+    <header class="topo">
+      <div>
+        <p class="eyebrow">
+          Módulo III
+        </p>
+
+        <h1>
+          Gestão de Alunos
+        </h1>
+
+        <p>
+          Front-end consumindo a API
+          FastAPI com autenticação
+          Bearer Token.
+        </p>
+      </div>
+
+      <button
+        id="logout"
+        class="secundario oculto"
+        type="button"
+      >
+        Sair
+      </button>
+    </header>
+
+
+    <section
+      id="login-card"
+      class="card"
+    >
+
+      <h2>
+        Entrar
+      </h2>
+
+      <form id="login-form">
+
+        <label>
+          Usuário
+
+          <input
+            id="username"
+            name="username"
+            autocomplete="username"
+            required
+          >
+        </label>
+
+        <label>
+          Senha
+
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            required
+          >
+        </label>
+
+        <button type="submit">
+          Entrar
+        </button>
+
+      </form>
+
+      <p
+        id="login-msg"
+        class="mensagem"
+      ></p>
+
+    </section>
+
+
+    <section
+      id="dashboard"
+      class="oculto"
+    >
+
+      <div class="grid">
+
+        <section class="card">
+
+          <div class="linha-titulo">
+
+            <h2>
+              Alunos
+            </h2>
+
+            <button
+              id="recarregar"
+              class="secundario"
+              type="button"
+            >
+              Atualizar
+            </button>
+
+          </div>
+
+          <div class="tabela-wrap">
+
+            <table>
+
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nome</th>
+                  <th>Matrícula</th>
+                  <th>Idade</th>
+                  <th>Média</th>
+                </tr>
+              </thead>
+
+              <tbody
+                id="alunos-body"
+              ></tbody>
+
+            </table>
+
+          </div>
+
+          <p
+            id="lista-msg"
+            class="mensagem"
+          ></p>
+
+        </section>
+
+
+        <section class="card">
+
+          <h2>
+            Cadastrar aluno
+          </h2>
+
+          <form id="aluno-form">
+
+            <label>
+              Nome
+              <input
+                id="nome"
+                required
+                maxlength="100"
+              >
+            </label>
+
+            <label>
+              Matrícula
+              <input
+                id="matricula"
+                required
+                maxlength="20"
+              >
+            </label>
+
+            <label>
+              Idade
+              <input
+                id="idade"
+                type="number"
+                min="0"
+                max="120"
+              >
+            </label>
+
+            <label>
+              Média
+              <input
+                id="media"
+                type="number"
+                min="0"
+                max="10"
+                step="0.1"
+                value="0"
+              >
+            </label>
+
+            <button type="submit">
+              Cadastrar
+            </button>
+
+          </form>
+
+          <p
+            id="cadastro-msg"
+            class="mensagem"
+          ></p>
+
+        </section>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <script src="app.js"></script>
+
+</body>
+
+</html>
