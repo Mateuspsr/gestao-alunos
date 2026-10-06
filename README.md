@@ -1,130 +1,156 @@
-# API de Gestão de Alunos — projeto base (template)
+# Gestão de Alunos — Módulo III
 
-API REST de **gestão escolar**, feita com **FastAPI** e **PostgreSQL**. Este
-repositório é um **template de estudo em forma de esqueleto**: os arquivos já
-existem (`main.py`, `db.py`, `schemas.py`, ...), mas **sem código pronto** —
-apenas comentários `TODO`/`DICA` indicando **onde cada coisa vai**.
+Aplicação web de gestão escolar construída com **FastAPI + PostgreSQL** no back-end e **HTML/CSS/JavaScript** no front-end.
 
-Você implementa o projeto **inteiro**, da conexão com o banco até as rotas da
-API. É aprender construindo de verdade: a estrutura te guia, o código é seu.
+A versão atual integra o front-end à API, possui autenticação com **JWT/Bearer Token** e está preparada para deploy no Render.
 
-> 👉 **Novo por aqui? Comece pelo [COMECE_AQUI.md](docs/COMECE_AQUI.md)** — o
-> roteiro do começo ao fim (preparar → entender → implementar → testar → entregar).
+## Estado do projeto — 06/10/2026
 
-> **Como usar este template:** no GitHub, clique em **"Use this template" →
-> "Create a new repository"** para gerar o *seu* repositório a partir deste.
-> Depois siga o [guia de instalação](docs/INSTALACAO_WSL.md).
+| Requisito da entrega | Estado |
+|---|---|
+| Integração front-end ↔ back-end | ✅ Implementado |
+| Consumo real da API com `fetch()` | ✅ Implementado |
+| Login | ✅ Implementado |
+| JWT / Bearer Token | ✅ Implementado |
+| Rotas protegidas | ✅ Implementado |
+| PostgreSQL | ✅ Implementado |
+| Configuração de deploy | ✅ Preparada em `render.yaml` |
+| Link público em produção | ⏳ Próxima etapa: criar o Blueprint no Render e validar |
 
-## O que vem no template
+Prazo da entrega: **08/10/2026**.
 
-- **A estrutura** dos arquivos, cada um com sua responsabilidade de camada.
-- Comentários **`TODO`/`DICA`** guiando o que implementar em cada ponto.
-- O **modelo de dados** definido em [esquema.sql](esquema.sql) (as 3 tabelas).
-- Config de projeto pronta: `requirements.txt`, `.env.example`, `.gitignore`.
-- O **teste de aceitação** ([testar_api.sh](testar_api.sh)) e o **guia de
-  instalação** ([INSTALACAO_WSL.md](docs/INSTALACAO_WSL.md)).
+## Arquitetura
 
-Nenhum código de aplicação vem pronto — isso é com você.
+```text
+frontend/
+  index.html       interface
+  app.js           consumo da API e envio do Bearer Token
+  styles.css       apresentação
 
-## O que VOCÊ implementa
-
-Siga o roteiro completo em **[DESAFIOS.md](docs/DESAFIOS.md)** (com critérios de
-aceitação e rubrica de nota). Em resumo:
-
-| Etapa | Onde | O que fazer |
-|---|---|---|
-| **0 — Base** | `db.py` + `schemas.py` + `main.py` | Conexão, criar tabelas e CRUD de alunos (a fundação) |
-| **1 — Filtros** | `db.py` + `main.py` | `GET /alunos` com `?idade_minima=&media_minima=&q=` |
-| **2 — Disciplinas** | `schemas.py` + `db.py` + `main.py` | CRUD de disciplinas |
-| **3 — Matrículas** | `db.py` + `main.py` | Relacionar aluno ↔ disciplina (`JOIN`) |
-
-**Como validar:** rode o `testar_api.sh` (é o alvo). No começo tudo falha;
-conforme você implementa, os testes passam. Quando todos baterem, terminou.
-
-## Estrutura
-
-```
-.
-├── main.py            # ESQUELETO — rotas FastAPI (você implementa)
-├── schemas.py         # ESQUELETO — modelos Pydantic (você implementa)
-├── db.py              # ESQUELETO — conexão e queries SQL (você implementa)
-├── esquema.sql        # o modelo de dados (as 3 tabelas) — sua especificação
-├── testar_api.sh      # teste de aceitação com curl (o alvo)
-├── requirements.txt   # bibliotecas do projeto
-├── .env.example       # modelo de credenciais (copie para .env)
-├── .gitignore
-├── README.md
-└── docs/              # documentação (guias)
-    ├── COMECE_AQUI.md     # guia do aluno do começo ao fim (leia primeiro)
-    ├── INSTALACAO_WSL.md  # passo a passo de instalação no WSL Ubuntu
-    └── DESAFIOS.md        # enunciado dos desafios + rubrica de avaliação
+main.py            rotas HTTP / FastAPI
+schemas.py         validação com Pydantic
+auth.py            autenticação, hash de senha e JWT
+db.py              PostgreSQL e SQL
+render.yaml        infraestrutura de deploy
 ```
 
-Cada arquivo tem **uma responsabilidade** (arquitetura em camadas): mudar o
-banco não afeta as rotas; mudar a validação não afeta o SQL.
+Fluxo principal:
 
-## Início rápido
+```text
+Navegador
+   ↓
+frontend/app.js
+   ↓  fetch + Authorization: Bearer <token>
+FastAPI (main.py)
+   ↓
+validação / autenticação
+   ↓
+db.py
+   ↓
+PostgreSQL
+```
 
-> Para o passo a passo completo (instalar Python, PostgreSQL, Git e configurar
-> o banco no WSL Ubuntu), veja **[INSTALACAO_WSL.md](docs/INSTALACAO_WSL.md)**.
+## Funcionalidades
 
-Resumo, assumindo Python 3 e um PostgreSQL já rodando com o banco criado:
+### Autenticação
+
+- `POST /auth/login` — autentica e devolve um JWT.
+- `GET /auth/me` — retorna o usuário autenticado.
+- As rotas de alunos e disciplinas exigem `Authorization: Bearer <token>`.
+- As senhas ficam armazenadas como hash, não em texto puro.
+
+### Alunos
+
+- `POST /alunos`
+- `GET /alunos`
+- `GET /alunos/{id}`
+- `PATCH /alunos/{id}`
+- `DELETE /alunos/{id}`
+- filtros por idade mínima, média mínima e nome.
+
+### Disciplinas e matrículas
+
+- `POST /disciplinas`
+- `GET /disciplinas`
+- `DELETE /disciplinas/{id}`
+- `POST /alunos/{id}/matricular/{disciplina_id}`
+- `GET /alunos/{id}/disciplinas`
+
+## Rodar localmente
+
+### 1. Ativar o ambiente virtual e instalar dependências
 
 ```bash
-# 1. Ambiente virtual + dependências
-python3 -m venv venv
-source venv/bin/activate            # Windows: venv\Scripts\activate
+source venv/bin/activate
 pip install -r requirements.txt
-
-# 2. Credenciais
-cp .env.example .env                # ajuste os valores se necessário
-
-# 3. Implemente o projeto (comece pela Etapa 0 do DESAFIOS.md).
-#    Enquanto o main.py não tiver o `app`, o comando abaixo ainda não sobe.
-
-# 4. Depois de implementar, suba a API:
-uvicorn main:app --reload
 ```
 
-Com a API no ar, abra <http://127.0.0.1:8000/docs> para explorar os endpoints,
-e rode `bash testar_api.sh` (em outro terminal) para checar os status.
+### 2. Configurar variáveis de ambiente
 
-## Endpoints
+Crie o `.env` a partir do exemplo:
 
-Todos os endpoints abaixo são **para você implementar** (veja `DESAFIOS.md`):
+```bash
+cp .env.example .env
+```
 
-| Método | Rota | O que faz | Etapa |
-|---|---|---|---|
-| POST | `/alunos` | Cria aluno (201) · matrícula duplicada → 409 | 0 |
-| GET | `/alunos` | Lista alunos (com filtros) | 0 + 1 |
-| GET | `/alunos/{id}` | Busca um · 404 se não existir | 0 |
-| PATCH | `/alunos/{id}` | Atualização parcial | 0 |
-| DELETE | `/alunos/{id}` | Exclui (204) · 404 se não existir | 0 |
-| POST | `/disciplinas` | Cria disciplina | 2 |
-| GET | `/disciplinas` | Lista disciplinas | 2 |
-| DELETE | `/disciplinas/{id}` | Exclui disciplina | 2 |
-| POST | `/alunos/{id}/matricular/{disc_id}` | Matricula aluno em disciplina | 3 |
-| GET | `/alunos/{id}/disciplinas` | Disciplinas do aluno (JOIN) | 3 |
+Defina uma chave JWT forte e uma senha de administrador. O arquivo `.env` está no `.gitignore` e **não deve ser enviado ao GitHub**.
 
-## Depois dos desafios: como ir além
+### 3. Iniciar o PostgreSQL
 
-Terminou os desafios acima? Sugestões para levar o projeto ao próximo nível:
+```bash
+sudo service postgresql start
+```
 
-- **Nova entidade:** adicione `professores` (ou `turmas`, `notas`) com o mesmo
-  padrão de camadas — um bom exercício para fixar o CRUD.
-- **Testes automatizados:** `pytest` + o `TestClient` do FastAPI, para o
-  computador conferir a API a cada mudança.
-- **ORM:** troque o SQL manual do `db.py` por **SQLAlchemy**; use **Alembic**
-  para versionar mudanças no banco (migrations).
-- **Autenticação:** proteja os endpoints com **JWT** (OAuth2 do FastAPI).
-- **Deploy:** empacote com **Docker** e publique (Render, Fly.io, Railway).
-- **Frontend:** consuma a API a partir de um app React/Flutter ou um HTML
-  simples com `fetch()`.
+### 4. Iniciar a aplicação
 
-## Tecnologias
+```bash
+python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
 
-- [Python 3](https://www.python.org/)
-- [FastAPI](https://fastapi.tiangolo.com/) + [Uvicorn](https://www.uvicorn.org/)
-- [PostgreSQL](https://www.postgresql.org/) via [psycopg2](https://www.psycopg.org/)
-- [Pydantic](https://docs.pydantic.dev/) para validação
-- [python-dotenv](https://pypi.org/project/python-dotenv/) para credenciais
+Abra:
+
+- aplicação: `http://localhost:8000`
+- Swagger: `http://localhost:8000/docs`
+- health check: `http://localhost:8000/health`
+
+## Teste rápido do Módulo III
+
+Com a API em execução e o `.env` configurado:
+
+```bash
+bash testar_api.sh
+```
+
+O script comprova:
+
+1. que a aplicação responde;
+2. que `/alunos` sem token retorna 401;
+3. que o login gera um Bearer Token;
+4. que o token permite consumir as rotas protegidas;
+5. CRUD de aluno;
+6. criação de disciplina e matrícula.
+
+## Deploy
+
+O projeto possui `render.yaml` com:
+
+- Web Service Python;
+- PostgreSQL;
+- `DATABASE_URL` ligada ao banco;
+- `JWT_SECRET` gerada pelo Render;
+- `ADMIN_PASSWORD` definida como segredo;
+- health check em `/health`;
+- start command com Uvicorn.
+
+A próxima etapa é criar um **Blueprint** no Render a partir deste repositório e informar `ADMIN_PASSWORD` quando solicitado. Depois do primeiro deploy, é necessário testar o login, o cadastro de aluno e uma rota protegida no endereço público.
+
+## Segurança
+
+Nunca faça commit de:
+
+- `.env`;
+- senha real do banco;
+- `JWT_SECRET`;
+- senha real do administrador.
+
+Somente `.env.example` deve ficar versionado.
