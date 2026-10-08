@@ -20,8 +20,6 @@ interface DashboardProps {
 
 interface DesempenhoDisciplina {
   disciplina: Disciplina;
-  aprovados: number;
-  reprovados: number;
   total: number;
 }
 
@@ -117,54 +115,12 @@ function Dashboard({
     )
     .slice(0, 3);
 
-  const desempenho:
-    DesempenhoDisciplina[] =
-      disciplinas.map(
-        (disciplina) => {
-          const vinculos =
-            matriculas.filter(
-              (matricula) =>
-                matricula.disciplina_id ===
-                disciplina.id
-            );
-
-          const aprovados =
-            vinculos.filter(
-              (matricula) =>
-                matricula.nota >=
-                6
-            ).length;
-
-          return {
-            disciplina,
-
-            aprovados,
-
-            reprovados:
-              vinculos.length -
-              aprovados,
-
-            total:
-              vinculos.length,
-          };
-        }
-      );
-
-  const maisAprovacoes = [
-    ...desempenho,
-  ].sort(
-    (a, b) =>
-      b.aprovados -
-      a.aprovados
-  )[0];
-
-  const maisReprovacoes = [
-    ...desempenho,
-  ].sort(
-    (a, b) =>
-      b.reprovados -
-      a.reprovados
-  )[0];
+  const desempenho: DesempenhoDisciplina[] = disciplinas.map((disciplina) => ({
+    disciplina,
+    total: matriculas.filter((vinculo) => vinculo.disciplina_id === disciplina.id).length,
+  }));
+  const maisMatriculas = [...desempenho].sort((a, b) => b.total - a.total)[0];
+  const menosMatriculas = [...desempenho].sort((a, b) => a.total - b.total)[0];
 
   return (
     <section className="pagina">
@@ -352,7 +308,7 @@ function Dashboard({
             </span>
 
             <h2>
-              Desempenho por
+              Matrículas por
               disciplina
             </h2>
           </div>
@@ -360,38 +316,38 @@ function Dashboard({
           <div className="disciplinas-preview">
             <div className="destaque-disciplina destaque-positivo">
               <span>
-                MAIS APROVAÇÕES
+                MAIS MATRÍCULAS
               </span>
 
               <strong>
-                {maisAprovacoes
+                {maisMatriculas
                   ?.disciplina
                   .nome ??
                   "Sem dados"}
               </strong>
 
               <p>
-                {maisAprovacoes
-                  ? `${maisAprovacoes.aprovados} alunos aprovados`
+                {maisMatriculas
+                  ? `${maisMatriculas.total} alunos matriculados`
                   : ""}
               </p>
             </div>
 
             <div className="destaque-disciplina destaque-negativo">
               <span>
-                MAIS REPROVAÇÕES
+                MENOS MATRÍCULAS
               </span>
 
               <strong>
-                {maisReprovacoes
+                {menosMatriculas
                   ?.disciplina
                   .nome ??
                   "Sem dados"}
               </strong>
 
               <p>
-                {maisReprovacoes
-                  ? `${maisReprovacoes.reprovados} alunos reprovados`
+                {menosMatriculas
+                  ? `${menosMatriculas.total} alunos matriculados`
                   : ""}
               </p>
             </div>
@@ -404,8 +360,8 @@ function Dashboard({
                   item.total >
                   0
                     ? Math.round(
-                        (item.aprovados /
-                          item.total) *
+                        (item.total /
+                          alunos.length) *
                           100
                       )
                     : 0;
@@ -448,7 +404,7 @@ function Dashboard({
                         {
                           percentual
                         }
-                        % aprovados
+                        % dos alunos
                       </span>
                     </div>
                   </div>
