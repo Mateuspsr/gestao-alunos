@@ -6,7 +6,13 @@ export interface Aluno {
   media: number;
 }
 
-export type AlunoEntrada = Omit<Aluno, "id">;
+export interface AlunoEntrada {
+  nome: string;
+  idade: number;
+  matricula: string;
+  media: number;
+}
+
 export type AlunoAtualizacao = Partial<Pick<Aluno, "nome" | "idade" | "media">>;
 
 export interface Disciplina {
@@ -22,6 +28,14 @@ export interface FiltrosAluno {
   idade_minima?: number;
   media_minima?: number;
 }
+
+export interface MatriculaDisciplina {
+  id: number;
+  aluno_id: number;
+  disciplina_id: number;
+}
+
+export type DisciplinaDoAluno = Disciplina;
 
 export interface Usuario {
   id: number;
