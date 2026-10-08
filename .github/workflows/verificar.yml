@@ -1,0 +1,21 @@
+name: Verificar aplicação
+on:
+  push:
+    branches: [modulo-iii, modulo-iii-react]
+  pull_request:
+    branches: [modulo-iii]
+
+jobs:
+  teste:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Instalar dependências do front-end
+        run: npm install --prefix frontend
+      - name: Compilar TypeScript e Vite
+        run: npm run build --prefix frontend
+      - name: Conferir arquivos Python
+        run: python -m compileall -q main.py db.py schemas.py auth.py
