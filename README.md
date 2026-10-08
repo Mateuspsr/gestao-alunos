@@ -1,123 +1,103 @@
-# Gestão de Alunos
+# POLAR — Gestão Escolar
 
-Sistema web para administração de alunos, disciplinas e matrículas. O projeto utiliza **FastAPI**, **PostgreSQL** e uma interface responsiva em **HTML, CSS e JavaScript**.
+Portal de gestão acadêmica com **React + TypeScript** no front-end e **FastAPI + PostgreSQL** no back-end. O projeto reúne autenticação, cadastro de alunos, disciplinas e matrículas em uma única aplicação.
 
-## Recursos
+## Tecnologias
 
-- Login com senha armazenada por hash Argon2 e autenticação JWT.
-- Rotas de dados protegidas por Bearer Token.
-- Painel com total de alunos, disciplinas, média geral e indicador de desempenho.
-- Cadastro, consulta, edição e exclusão de alunos.
-- Pesquisa de alunos e filtro por média.
-- Cadastro, listagem e exclusão de disciplinas.
-- Matrícula de alunos em disciplinas e consulta dos vínculos.
-- Persistência em PostgreSQL.
-- Interface responsiva com requisições HTTP à própria API.
+- React 19, TypeScript e Vite 7;
+- Python, FastAPI, Pydantic e PostgreSQL;
+- JWT para autenticação e rotas protegidas com Bearer Token;
+- Render para hospedagem e banco de dados.
 
-## Estrutura
+## Organização
 
 ```text
-.
-├── auth.py               # Autenticação e controle de acesso
-├── db.py                 # Acesso ao PostgreSQL
-├── main.py               # Endpoints FastAPI
-├── schemas.py            # Modelos e validação
-├── frontend/
-│   ├── index.html        # Estrutura da interface
-│   ├── styles.css        # Estilos responsivos
-│   └── app.js            # Interações e consumo da API
-├── requirements.txt
-├── .env.example
-├── render.yaml           # Infraestrutura do Render
-└── testar_api.sh         # Teste de integração por HTTP
+frontend/
+  src/
+    api.ts                  # Requisições HTTP e autenticação
+    types.ts                # Contratos de dados
+    App.tsx                 # Estado da aplicação e navegação
+    components/
+      Login.tsx             # Formulário de autenticação
+      Dashboard.tsx         # Indicadores do sistema
+      Alunos.tsx            # Cadastro, filtros, edição e exclusão
+      Disciplinas.tsx       # Disciplinas e matrículas
+    main.tsx
+    styles.css
+  index.html
+  vite.config.ts
+  package.json
+
+main.py                    # Endpoints HTTP
+schemas.py                 # Validação das entradas
+db.py                      # Consultas e operações no banco
+auth.py                    # JWT e senhas
+render.yaml                # Configuração de produção
+testar_api.sh              # Testes HTTP
 ```
 
-## Requisitos
+Os dados exibidos no navegador são obtidos pela API. Não há uma lista local simulando alunos nem notas por disciplina que não existam no banco.
 
-- Python 3.11 ou superior.
-- PostgreSQL.
-- Git, se desejar clonar o repositório.
+## Execução local
 
-## Executar localmente
+É necessário ter Python 3, Node.js 20.19+ e PostgreSQL.
 
-Clone o repositório e entre na pasta do projeto.
+**Primeiro terminal — API**
 
 ```bash
-git clone https://github.com/Mateuspsr/gestao-alunos.git
-cd gestao-alunos
-git checkout modulo-iii
-python3 -m venv venv
+cd ~/Projetos/gestao-alunos
 source venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env
-```
-
-Preencha as variáveis de conexão e autenticação em `.env`. Gere uma chave JWT com `openssl rand -hex 32`. Configure o banco `gestao_alunos` e um usuário PostgreSQL com permissões no esquema `public`.
-
-Inicie o serviço:
-
-```bash
+sudo service postgresql start
 python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-No navegador, acesse:
+Antes de iniciar, configure o arquivo `.env` com a conexão PostgreSQL, `JWT_SECRET` e `ADMIN_PASSWORD`. O backend exige um build inicial do front-end para servir a página por `/app/`; para desenvolvimento com recarga automática, use o servidor Vite abaixo.
 
-- Interface: http://localhost:8000
-- Documentação da API: http://localhost:8000/docs
-- Verificação de disponibilidade: http://localhost:8000/health
-
-O administrador inicial é criado na primeira inicialização utilizando `ADMIN_USERNAME` e `ADMIN_PASSWORD`. Alterar `ADMIN_PASSWORD` no ambiente não redefine a senha de um administrador que já existe no banco.
-
-## Teste de integração
-
-Com a API em execução, abra outro terminal e rode:
+**Segundo terminal — front-end**
 
 ```bash
-bash testar_api.sh
+cd ~/Projetos/gestao-alunos/frontend
+npm install
+npm run dev
 ```
 
-O teste verifica a rota de saúde, bloqueio de acesso não autenticado, emissão de token JWT, criação, consulta, edição e exclusão de alunos, além de disciplinas e matrículas.
+Abra o endereço exibido pelo Vite (normalmente `http://localhost:5173`). O Vite encaminha as requisições `/auth`, `/alunos` e `/disciplinas` ao FastAPI local.
 
-## Autenticação
+Para compilar o front-end de produção, execute:
 
-O endpoint `POST /auth/login` aceita dados `application/x-www-form-urlencoded` com `username` e `password`, e retorna `access_token` e `token_type`.
-
-A interface utiliza a resposta no cabeçalho HTTP:
-
-```http
-Authorization: Bearer <access_token>
+```bash
+cd ~/Projetos/gestao-alunos/frontend
+npm run build
 ```
 
-As requisições sem token válido a rotas protegidas retornam HTTP 401.
+Depois, o mesmo front-end pode ser acessado em `http://localhost:8000/app/`.
 
-## Publicação no Render
+## Recursos principais
 
-O arquivo `render.yaml` configura o serviço web, o PostgreSQL e a integração via `DATABASE_URL`.
+- Login por `POST /auth/login` e identificação do usuário por `GET /auth/me`;
+- JWT transmitido em `Authorization: Bearer <token>`;
+- bloqueio HTTP 401 nas rotas privadas sem credenciais válidas;
+- alunos: `GET`, `POST`, `PATCH` e `DELETE`;
+- filtros combináveis por nome, idade mínima e média mínima;
+- disciplinas: cadastro, listagem e exclusão;
+- matrícula de alunos em disciplinas e consulta dos vínculos por `JOIN`;
+- indicadores gerais calculados a partir dos registros armazenados.
 
-- Conecte o repositório GitHub a um Blueprint no Render.
-- Selecione a branch `modulo-iii`.
-- Configure `ADMIN_PASSWORD` nas variáveis de ambiente do serviço, usando uma senha exclusiva para produção.
-- Confirme a presença de `DATABASE_URL`, `JWT_SECRET` e `ADMIN_USERNAME`.
-- Aguarde o deploy ficar **Live**.
-- Acesse o endereço público, faça login e verifique cadastro e listagem de alunos.
+A matrícula é um identificador único. Durante a edição de aluno, ela não pode ser alterada. Como a API não armazena notas individuais por disciplina, o portal exibe apenas a média geral do aluno.
 
-**Importante:** nunca versione o arquivo `.env` nem credenciais reais. As variáveis confidenciais devem ficar apenas no ambiente local ou na configuração privada do Render.
+## Publicação
 
-## Endpoints principais
+O `render.yaml` usa o mesmo Web Service Python para servir a API e o front-end React compilado. O comando de build executa a instalação das dependências Python, a instalação dos pacotes do front-end e o `npm run build`.
 
-| Método | Endpoint | Descrição |
-|---|---|---|
-| POST | `/auth/login` | Autenticar usuário |
-| GET | `/auth/me` | Consultar usuário autenticado |
-| GET | `/alunos` | Listar alunos |
-| POST | `/alunos` | Cadastrar aluno |
-| GET | `/alunos/{id}` | Consultar aluno |
-| PATCH | `/alunos/{id}` | Atualizar cadastro |
-| DELETE | `/alunos/{id}` | Excluir cadastro |
-| GET | `/disciplinas` | Listar disciplinas |
-| POST | `/disciplinas` | Cadastrar disciplina |
-| DELETE | `/disciplinas/{id}` | Excluir disciplina |
-| POST | `/alunos/{id}/matricular/{disciplina_id}` | Registrar matrícula |
-| GET | `/alunos/{id}/disciplinas` | Consultar matrículas |
+O Render deve receber as variáveis `DATABASE_URL`, `JWT_SECRET`, `ADMIN_USERNAME` e `ADMIN_PASSWORD`. Senhas reais e tokens não devem ser incluídos no GitHub.
 
-Projeto desenvolvido para a disciplina de desenvolvimento de sistemas.
+- Aplicação: https://gestao-alunos-w90j.onrender.com
+- Documentação da API: https://gestao-alunos-w90j.onrender.com/docs
+- Teste de saúde: https://gestao-alunos-w90j.onrender.com/health
+
+Execute `bash testar_api.sh` com o servidor rodando para testar autenticação e operações principais.
+
+## Observações
+
+Os componentes React não conhecem SQL nem manipulam credenciais do banco. Toda comunicação com o servidor fica em `frontend/src/api.ts`; as regras de validação e o acesso ao PostgreSQL permanecem na API.
