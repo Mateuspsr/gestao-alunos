@@ -42,6 +42,16 @@ Os dados exibidos no navegador são obtidos pela API. Não há uma lista local s
 
 É necessário ter Python 3, Node.js 20.19+ e PostgreSQL.
 
+**Preparação inicial**
+
+```bash
+cd ~/Projetos/gestao-alunos/frontend
+npm install
+npm run build
+```
+
+A compilação cria `frontend/dist`, diretório servido pelo FastAPI. Configure o arquivo `.env` com a conexão PostgreSQL, `JWT_SECRET` e `ADMIN_PASSWORD` antes de iniciar o servidor.
+
 **Primeiro terminal — API**
 
 ```bash
@@ -52,13 +62,10 @@ sudo service postgresql start
 python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-Antes de iniciar, configure o arquivo `.env` com a conexão PostgreSQL, `JWT_SECRET` e `ADMIN_PASSWORD`. O backend exige um build inicial do front-end para servir a página por `/app/`; para desenvolvimento com recarga automática, use o servidor Vite abaixo.
-
-**Segundo terminal — front-end**
+**Segundo terminal — front-end (desenvolvimento)**
 
 ```bash
 cd ~/Projetos/gestao-alunos/frontend
-npm install
 npm run dev
 ```
 
