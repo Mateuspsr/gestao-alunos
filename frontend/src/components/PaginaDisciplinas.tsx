@@ -8,6 +8,8 @@ import {
   listarDisciplinas,
   listarMatriculas,
   matricularAluno,
+  criarDisciplina,
+  excluirDisciplina,
 } from "../api";
 
 import type {
@@ -56,6 +58,46 @@ function PaginaDisciplinas() {
     carregando,
     setCarregando,
   ] = useState(true);
+
+  const [novoNome, setNovoNome] = useState("");
+  const [novaCarga, setNovaCarga] = useState("40");
+  const [salvandoDisciplina, setSalvandoDisciplina] = useState(false);
+  const [mensagemDisciplina, setMensagemDisciplina] = useState("");
+  const [erroDisciplina, setErroDisciplina] = useState("");
+
+  async function cadastrarDisciplina(evento: React.FormEvent<HTMLFormElement>) {
+    evento.preventDefault();
+    if (salvandoDisciplina) return;
+    setSalvandoDisciplina(true);
+    setErroDisciplina("");
+    setMensagemDisciplina("");
+    try {
+      await criarDisciplina({ nome: novoNome.trim(), carga_horaria: Number(novaCarga) });
+      setDisciplinas(await listarDisciplinas());
+      setNovoNome("");
+      setNovaCarga("40");
+      setMensagemDisciplina("Disciplina cadastrada.");
+    } catch (falha) {
+      setErroDisciplina(falha instanceof Error ? falha.message : "Erro ao salvar disciplina.");
+    } finally {
+      setSalvandoDisciplina(false);
+    }
+  }
+
+  async function removerDisciplina(id: number) {
+    if (!window.confirm("Excluir esta disciplina e seus vínculos?")) return;
+    setErroDisciplina("");
+    try {
+      await excluirDisciplina(id);
+      const [lista, vinculos] = await Promise.all([listarDisciplinas(), listarMatriculas()]);
+      setDisciplinas(lista);
+      setMatriculas(vinculos);
+      setDisciplinaSelecionada(null);
+      setMensagemDisciplina("Disciplina excluída.");
+    } catch (falha) {
+      setErroDisciplina(falha instanceof Error ? falha.message : "Erro ao excluir disciplina.");
+    }
+  }
 
   const [alunoId, setAlunoId] = useState("");
   const [disciplinaId, setDisciplinaId] = useState("");
@@ -184,6 +226,27 @@ function PaginaDisciplinas() {
           </p>
         </div>
       </header>
+
+      <form className="painel-matriculas" onSubmit={cadastrarDisciplina}>
+        <h2>Cadastrar disciplina</h2>
+        <div className="formulario-duas-colunas">
+          <label>
+            <span>Nome da disciplina</span>
+            <input value={novoNome} onChange={(evento) => setNovoNome(evento.target.value)}
+              maxLength={100} placeholder="Ex.: Matemática" required />
+          </label>
+          <label>
+            <span>Carga horária</span>
+            <input type="number" min="1" step="1" value={novaCarga}
+              onChange={(evento) => setNovaCarga(evento.target.value)} required />
+          </label>
+        </div>
+        <button type="submit" className="botao-secundario" disabled={salvandoDisciplina}>
+          {salvandoDisciplina ? "Salvando..." : "Cadastrar disciplina"}
+        </button>
+        {mensagemDisciplina && <p className="formulario-sucesso" role="status">{mensagemDisciplina}</p>}
+        {erroDisciplina && <p className="formulario-erro-geral" role="alert">{erroDisciplina}</p>}
+      </form>
 
       <form className="painel-matriculas" onSubmit={registrarMatricula}>
         <h2>Matricular aluno em uma disciplina</h2>
@@ -318,12 +381,12 @@ function PaginaDisciplinas() {
                 </h2>
 
                 <p>
-                  {
-                    detalhe.disciplina
-                      .carga_horaria
-                  }{" "}
-                  horas
+                  {detalhe.disciplina.carga_horaria} horas
                 </p>
+                <button type="button" className="botao-perigo"
+                  onClick={() => void removerDisciplina(detalhe.disciplina.id)}>
+                  Excluir disciplina
+                </button>
               </div>
 
               <button
