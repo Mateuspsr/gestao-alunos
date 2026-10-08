@@ -128,6 +128,10 @@ A verificação automatizada no GitHub Actions cria um PostgreSQL descartável, 
 
 **Diferença para o script original do Módulo I:** o roteiro fornecido pelo professor envia requisições sem autenticação. Neste Módulo III, as rotas estão protegidas por JWT; portanto, executar o script original sem alterações recebe HTTP 401. Os testes deste repositório reproduzem as operações com um Bearer Token válido e verificam também a proteção.
 
+## Captura do sistema
+
+Uma captura da tela do POLAR original é gerada no teste de navegador e disponibilizada como artefato **captura-polar** na [execução de verificação da aplicação](https://github.com/Mateuspsr/gestao-alunos/actions/workflows/verificar.yml). Abra a execução mais recente concluída e procure o artefato na seção *Artifacts*.
+
 ## Publicação
 
 O `render.yaml` configura um Web Service Python e um banco PostgreSQL. O comando de build instala dependências Python e Node, verifica TypeScript, compila Vite e serve os arquivos pelo FastAPI.
