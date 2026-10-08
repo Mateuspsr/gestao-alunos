@@ -1,19 +1,64 @@
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class AlunoEntrada(BaseModel):
-    nome: str = Field(min_length=1, max_length=100)
-    idade: Optional[int] = Field(default=None, ge=0, le=120)
-    matricula: str = Field(min_length=1, max_length=20)
-    media: float = Field(default=0, ge=0, le=10)
+    nome: str = Field(
+        min_length=1,
+        max_length=100
+    )
+
+    idade: Optional[int] = Field(
+        default=None,
+        ge=0,
+        le=120
+    )
+
+    matricula: str = Field(
+        min_length=1,
+        max_length=20
+    )
+
+    media: float = Field(
+        default=0,
+        ge=0,
+        le=10
+    )
+
+    @field_validator("nome", "matricula")
+    @classmethod
+    def validar_identificacao(cls, valor: str) -> str:
+        if not valor.strip():
+            raise ValueError("Informe um valor não vazio.")
+        return valor.strip()
 
 
 class AlunoAtualizacao(BaseModel):
-    nome: Optional[str] = Field(default=None, min_length=1, max_length=100)
-    idade: Optional[int] = Field(default=None, ge=0, le=120)
-    media: Optional[float] = Field(default=None, ge=0, le=10)
+    nome: Optional[str] = Field(
+        default=None,
+        min_length=1,
+        max_length=100
+    )
+
+    idade: Optional[int] = Field(
+        default=None,
+        ge=0,
+        le=120
+    )
+
+    media: Optional[float] = Field(
+        default=None,
+        ge=0,
+        le=10
+    )
+
+    @field_validator("nome")
+    @classmethod
+    def validar_nome(cls, valor: str | None) -> str | None:
+        if valor is not None and not valor.strip():
+            raise ValueError("Informe um nome não vazio.")
+        return valor.strip() if valor is not None else None
 
 
 class AlunoSaida(BaseModel):
@@ -25,11 +70,39 @@ class AlunoSaida(BaseModel):
 
 
 class DisciplinaEntrada(BaseModel):
-    nome: str = Field(min_length=1, max_length=100)
-    carga_horaria: int = Field(gt=0)
+    nome: str = Field(
+        min_length=1,
+        max_length=100
+    )
+
+    carga_horaria: int = Field(
+        gt=0
+    )
+
+    @field_validator("nome")
+    @classmethod
+    def validar_nome(cls, valor: str) -> str:
+        if not valor.strip():
+            raise ValueError("Informe o nome da disciplina.")
+        return valor.strip()
 
 
 class DisciplinaSaida(BaseModel):
     id: int
     nome: str
     carga_horaria: int
+
+
+class TokenSaida(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class UsuarioSaida(BaseModel):
+    id: int
+    username: str
+
+class MatriculaSaida(BaseModel):
+    id: int
+    aluno_id: int
+    disciplina_id: int

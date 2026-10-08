@@ -1,130 +1,149 @@
-# API de Gestão de Alunos — projeto base (template)
+# POLAR — Gestão Escolar
 
-API REST de **gestão escolar**, feita com **FastAPI** e **PostgreSQL**. Este
-repositório é um **template de estudo em forma de esqueleto**: os arquivos já
-existem (`main.py`, `db.py`, `schemas.py`, ...), mas **sem código pronto** —
-apenas comentários `TODO`/`DICA` indicando **onde cada coisa vai**.
+Sistema de gestão de alunos, disciplinas e matrículas desenvolvido com **React + TypeScript** no frontend, **FastAPI** no backend e **PostgreSQL** para persistência.
 
-Você implementa o projeto **inteiro**, da conexão com o banco até as rotas da
-API. É aprender construindo de verdade: a estrutura te guia, o código é seu.
+O Módulo III integra a interface POLAR criada no [Módulo II](https://github.com/Mateuspsr/gestao-alunos-frontend) à API do Módulo I, mantendo a identidade visual, a introdução animada, o menu lateral, os cards de alunos e as telas de consulta e administração.
 
-> 👉 **Novo por aqui? Comece pelo [COMECE_AQUI.md](docs/COMECE_AQUI.md)** — o
-> roteiro do começo ao fim (preparar → entender → implementar → testar → entregar).
+## Funcionalidades
 
-> **Como usar este template:** no GitHub, clique em **"Use this template" →
-> "Create a new repository"** para gerar o *seu* repositório a partir deste.
-> Depois siga o [guia de instalação](docs/INSTALACAO_WSL.md).
+- Login JWT; envio de `Authorization: Bearer <token>` nas chamadas protegidas.
+- Alunos: cadastro, consulta, filtros por nome/idade/média, edição e exclusão.
+- Pesquisa, ordenação, perfil e indicadores de médias dos alunos.
+- Cadastro e exclusão de disciplinas.
+- Vínculo aluno-disciplina, consulta das matrículas e prevenção de duplicatas.
+- Dados persistidos no PostgreSQL e carregados novamente ao abrir as páginas.
+- Tratamento de erro, carregamento e respostas HTTP.
 
-## O que vem no template
-
-- **A estrutura** dos arquivos, cada um com sua responsabilidade de camada.
-- Comentários **`TODO`/`DICA`** guiando o que implementar em cada ponto.
-- O **modelo de dados** definido em [esquema.sql](esquema.sql) (as 3 tabelas).
-- Config de projeto pronta: `requirements.txt`, `.env.example`, `.gitignore`.
-- O **teste de aceitação** ([testar_api.sh](testar_api.sh)) e o **guia de
-  instalação** ([INSTALACAO_WSL.md](docs/INSTALACAO_WSL.md)).
-
-Nenhum código de aplicação vem pronto — isso é com você.
-
-## O que VOCÊ implementa
-
-Siga o roteiro completo em **[DESAFIOS.md](docs/DESAFIOS.md)** (com critérios de
-aceitação e rubrica de nota). Em resumo:
-
-| Etapa | Onde | O que fazer |
-|---|---|---|
-| **0 — Base** | `db.py` + `schemas.py` + `main.py` | Conexão, criar tabelas e CRUD de alunos (a fundação) |
-| **1 — Filtros** | `db.py` + `main.py` | `GET /alunos` com `?idade_minima=&media_minima=&q=` |
-| **2 — Disciplinas** | `schemas.py` + `db.py` + `main.py` | CRUD de disciplinas |
-| **3 — Matrículas** | `db.py` + `main.py` | Relacionar aluno ↔ disciplina (`JOIN`) |
-
-**Como validar:** rode o `testar_api.sh` (é o alvo). No começo tudo falha;
-conforme você implementa, os testes passam. Quando todos baterem, terminou.
+Os indicadores de aprovação e reprovação **gerais** são calculados a partir de `aluno.media` (limite 6). O contrato não possui notas individuais por disciplina. Por isso, as telas de disciplinas e perfil exibem quantidade de matrículas e carga horária, sem boletim fictício.
 
 ## Estrutura
 
-```
+```text
 .
-├── main.py            # ESQUELETO — rotas FastAPI (você implementa)
-├── schemas.py         # ESQUELETO — modelos Pydantic (você implementa)
-├── db.py              # ESQUELETO — conexão e queries SQL (você implementa)
-├── esquema.sql        # o modelo de dados (as 3 tabelas) — sua especificação
-├── testar_api.sh      # teste de aceitação com curl (o alvo)
-├── requirements.txt   # bibliotecas do projeto
-├── .env.example       # modelo de credenciais (copie para .env)
-├── .gitignore
-├── README.md
-└── docs/              # documentação (guias)
-    ├── COMECE_AQUI.md     # guia do aluno do começo ao fim (leia primeiro)
-    ├── INSTALACAO_WSL.md  # passo a passo de instalação no WSL Ubuntu
-    └── DESAFIOS.md        # enunciado dos desafios + rubrica de avaliação
+├── main.py                 # Rotas FastAPI e códigos HTTP
+├── schemas.py              # Contratos de entrada e saída (Pydantic)
+├── db.py                   # SQL parametrizado e PostgreSQL
+├── auth.py                 # JWT, hash de senhas e usuário
+├── frontend/
+│   ├── index.html
+│   ├── package.json
+│   ├── vite.config.ts
+│   └── src/
+│       ├── App.tsx         # Controle da sessão
+│       ├── Polar.tsx       # Composição do frontend original
+│       ├── api.ts          # HTTP e Bearer Token
+│       ├── types.ts        # Interfaces TypeScript
+│       ├── index.css       # Tema POLAR original
+│       ├── login.css
+│       └── components/     # Telas, logo, menu, cards e formulários
+├── tests/
+│   ├── integracao.py       # Testes HTTP com PostgreSQL
+│   └── interface.spec.ts   # Testes de interface no navegador
+├── testar_api.sh
+└── render.yaml
 ```
 
-Cada arquivo tem **uma responsabilidade** (arquitetura em camadas): mudar o
-banco não afeta as rotas; mudar a validação não afeta o SQL.
+Todos os componentes usam `api.ts` para acessar os dados. O arquivo de mock do Módulo II não participa da aplicação integrada.
 
-## Início rápido
+## Requisitos locais
 
-> Para o passo a passo completo (instalar Python, PostgreSQL, Git e configurar
-> o banco no WSL Ubuntu), veja **[INSTALACAO_WSL.md](docs/INSTALACAO_WSL.md)**.
+- Python 3.11 ou superior
+- Node.js 20.19 ou superior
+- PostgreSQL em execução
 
-Resumo, assumindo Python 3 e um PostgreSQL já rodando com o banco criado:
+### 1. Preparar banco e variáveis
+
+Crie um banco PostgreSQL chamado `gestao_alunos` e um usuário com privilégios de criação de tabelas. Copie `.env.example` para `.env` e ajuste as variáveis de conexão do banco, `JWT_SECRET`, `ADMIN_USERNAME` e `ADMIN_PASSWORD`.
 
 ```bash
-# 1. Ambiente virtual + dependências
-python3 -m venv venv
-source venv/bin/activate            # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-
-# 2. Credenciais
-cp .env.example .env                # ajuste os valores se necessário
-
-# 3. Implemente o projeto (comece pela Etapa 0 do DESAFIOS.md).
-#    Enquanto o main.py não tiver o `app`, o comando abaixo ainda não sobe.
-
-# 4. Depois de implementar, suba a API:
-uvicorn main:app --reload
+cp .env.example .env
 ```
 
-Com a API no ar, abra <http://127.0.0.1:8000/docs> para explorar os endpoints,
-e rode `bash testar_api.sh` (em outro terminal) para checar os status.
+Uma chave JWT de desenvolvimento pode ser criada com `openssl rand -hex 32`. Não coloque senhas reais, o arquivo `.env` ou tokens no repositório.
 
-## Endpoints
+### 2. Instalar e compilar o React
 
-Todos os endpoints abaixo são **para você implementar** (veja `DESAFIOS.md`):
+```bash
+cd frontend
+npm install
+npm run build
+cd ..
+```
 
-| Método | Rota | O que faz | Etapa |
-|---|---|---|---|
-| POST | `/alunos` | Cria aluno (201) · matrícula duplicada → 409 | 0 |
-| GET | `/alunos` | Lista alunos (com filtros) | 0 + 1 |
-| GET | `/alunos/{id}` | Busca um · 404 se não existir | 0 |
-| PATCH | `/alunos/{id}` | Atualização parcial | 0 |
-| DELETE | `/alunos/{id}` | Exclui (204) · 404 se não existir | 0 |
-| POST | `/disciplinas` | Cria disciplina | 2 |
-| GET | `/disciplinas` | Lista disciplinas | 2 |
-| DELETE | `/disciplinas/{id}` | Exclui disciplina | 2 |
-| POST | `/alunos/{id}/matricular/{disc_id}` | Matricula aluno em disciplina | 3 |
-| GET | `/alunos/{id}/disciplinas` | Disciplinas do aluno (JOIN) | 3 |
+O comando `npm run build` verifica o TypeScript e gera `frontend/dist`, que é servido pelo FastAPI. Esse diretório deve existir antes de iniciar o backend na configuração de produção.
 
-## Depois dos desafios: como ir além
+### 3. Iniciar a API
 
-Terminou os desafios acima? Sugestões para levar o projeto ao próximo nível:
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python -m uvicorn main:app --reload --port 8000
+```
 
-- **Nova entidade:** adicione `professores` (ou `turmas`, `notas`) com o mesmo
-  padrão de camadas — um bom exercício para fixar o CRUD.
-- **Testes automatizados:** `pytest` + o `TestClient` do FastAPI, para o
-  computador conferir a API a cada mudança.
-- **ORM:** troque o SQL manual do `db.py` por **SQLAlchemy**; use **Alembic**
-  para versionar mudanças no banco (migrations).
-- **Autenticação:** proteja os endpoints com **JWT** (OAuth2 do FastAPI).
-- **Deploy:** empacote com **Docker** e publique (Render, Fly.io, Railway).
-- **Frontend:** consuma a API a partir de um app React/Flutter ou um HTML
-  simples com `fetch()`.
+- Aplicação: http://127.0.0.1:8000/app/
+- Documentação da API: http://127.0.0.1:8000/docs
+- Saúde do serviço: http://127.0.0.1:8000/health
 
-## Tecnologias
+Para editar o React com atualização automática, mantenha a API rodando e, em outro terminal, execute:
 
-- [Python 3](https://www.python.org/)
-- [FastAPI](https://fastapi.tiangolo.com/) + [Uvicorn](https://www.uvicorn.org/)
-- [PostgreSQL](https://www.postgresql.org/) via [psycopg2](https://www.psycopg.org/)
-- [Pydantic](https://docs.pydantic.dev/) para validação
-- [python-dotenv](https://pypi.org/project/python-dotenv/) para credenciais
+```bash
+cd frontend
+npm run dev
+```
+
+O proxy de `vite.config.ts` encaminha as chamadas `/auth`, `/alunos` e `/disciplinas` ao FastAPI. O Vite usa a base `/app/`; abra o endereço informado no terminal com esse caminho.
+
+## Integração e autenticação
+
+O login envia um formulário a `POST /auth/login`, recebe o JWT e o armazena em `sessionStorage` até o encerramento da sessão.
+
+Cada operação protegida usa:
+
+```http
+Authorization: Bearer <token>
+```
+
+A função HTTP de `frontend/src/api.ts` trata 200, 201, 204, 401, 404, 409 e 422, sem interpretar corpo JSON em uma exclusão que retorne 204.
+
+O fluxo de cadastro é:
+
+```text
+Formulario React -> src/api.ts -> POST /alunos -> FastAPI
+    -> Pydantic -> db.py -> PostgreSQL -> JSON -> React
+```
+
+O endpoint `GET /matriculas` foi adicionado como **extensão** para exibir todos os vínculos na interface original. Ele retorna apenas `id`, `aluno_id` e `disciplina_id`, com dados extraídos do PostgreSQL. Os endpoints oficiais de matrícula e o `JOIN` por aluno continuam disponíveis.
+
+## Testes
+
+Com PostgreSQL e FastAPI iniciados e as variáveis configuradas:
+
+```bash
+bash testar_api.sh
+python tests/integracao.py
+```
+
+A verificação automatizada no GitHub Actions cria um PostgreSQL descartável, compila React, inicia FastAPI, testa as rotas autenticadas e executa testes de interface no Chromium.
+
+**Diferença para o script original do Módulo I:** o roteiro fornecido pelo professor envia requisições sem autenticação. Neste Módulo III, as rotas estão protegidas por JWT; portanto, executar o script original sem alterações recebe HTTP 401. Os testes deste repositório reproduzem as operações com um Bearer Token válido e verificam também a proteção.
+
+## Captura do sistema
+
+Uma captura da tela do POLAR original é gerada no teste de navegador e disponibilizada como artefato **captura-polar** na [execução de verificação da aplicação](https://github.com/Mateuspsr/gestao-alunos/actions/workflows/verificar.yml). Abra a execução mais recente concluída e procure o artefato na seção *Artifacts*.
+
+## Publicação
+
+O `render.yaml` configura um Web Service Python e um banco PostgreSQL. O comando de build instala dependências Python e Node, verifica TypeScript, compila Vite e serve os arquivos pelo FastAPI.
+
+- [Aplicação pública](https://gestao-alunos-w90j.onrender.com)
+- [Documentação Swagger](https://gestao-alunos-w90j.onrender.com/docs)
+- [Teste de disponibilidade](https://gestao-alunos-w90j.onrender.com/health)
+
+Em produção, `DATABASE_URL`, `JWT_SECRET` e `ADMIN_PASSWORD` são variáveis privadas do Render.
+
+## Sobre os dados
+
+A matrícula escolar do aluno (`aluno.matricula`) é um código único. A matrícula em disciplinas é um relacionamento muitos-para-muitos na tabela `matriculas`. Nenhum valor de nota por disciplina é gerado ou inferido a partir da média geral do aluno.
+
+O banco permite `idade` nula em registros anteriores, enquanto o formulário de cadastro da interface requer uma idade válida. Quando um registro não possui idade, a consulta apresenta o campo sem valor.
