@@ -590,3 +590,19 @@ def inserir_usuario(
 
     finally:
         conexao.close()
+
+def listar_matriculas():
+    """Retorna os vinculos persistidos no banco, sem notas ficticias."""
+    conexao = conectar()
+    try:
+        with conexao.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT id, aluno_id, disciplina_id
+                FROM matriculas
+                ORDER BY id
+                """
+            )
+            return cursor.fetchall()
+    finally:
+        conexao.close()
