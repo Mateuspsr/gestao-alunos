@@ -1,6 +1,8 @@
 import { test, expect } from "@playwright/test";
+import { mkdirSync } from "node:fs";
 
 test("POLAR: login, cadastro, filtros, edição, disciplinas e matrícula", async ({ page }) => {
+  test.setTimeout(60_000);
   const id = Date.now().toString();
   const nome = "Aluno Navegador " + id;
   const matricula = "UI" + id;
@@ -15,6 +17,9 @@ test("POLAR: login, cadastro, filtros, edição, disciplinas e matrícula", asyn
   await page.getByLabel("Senha").fill(process.env.ADMIN_PASSWORD ?? "");
   await page.getByRole("button", { name: "Entrar" }).click();
   await expect(page.locator(".sidebar .marca")).toContainText("POLAR");
+  await page.locator(".intro-polar").waitFor({ state: "hidden", timeout: 12000 });
+  mkdirSync("capturas", { recursive: true });
+  await page.screenshot({ path: "capturas/polar-dashboard.png", fullPage: true });
 
   await page.locator('button[title="Matrículas"]').click();
   await page.getByRole("button", { name: /Nova matrícula/ }).click();
@@ -47,8 +52,11 @@ test("POLAR: login, cadastro, filtros, edição, disciplinas e matrícula", asyn
   await page.getByRole("button", { name: "Cadastrar disciplina" }).click();
   await expect(page.getByText("Disciplina cadastrada.")).toBeVisible();
 
-  await page.getByLabel("Aluno", { exact: true }).selectOption({ label: nome + " — " + matricula });
-  await page.getByLabel("Disciplina", { exact: true }).selectOption({ label: disciplina });
+  const formulario = page.locator("form").filter({
+    has: page.getByRole("heading", { name: "Matricular aluno em uma disciplina" }),
+  });
+  await formulario.locator("select").first().selectOption({ label: nome + " — " + matricula });
+  await formulario.locator("select").nth(1).selectOption({ label: disciplina });
   await page.getByRole("button", { name: "Registrar matrícula" }).click();
   await expect(page.getByText(/Matrícula registrada/)).toBeVisible();
 
