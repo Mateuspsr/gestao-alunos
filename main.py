@@ -37,6 +37,7 @@ from schemas import (
     DisciplinaSaida,
     TokenSaida,
     UsuarioSaida,
+    MatriculaSaida,
 )
 
 
@@ -445,3 +446,9 @@ def listar_disciplinas_do_aluno(
     return db.disciplinas_do_aluno(
         aluno_id
     )
+
+@app.get("/matriculas", response_model=list[MatriculaSaida])
+def listar_matriculas(
+    _usuario=Depends(auth.obter_usuario_atual),
+):
+    return db.listar_matriculas()
