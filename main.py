@@ -42,7 +42,7 @@ from schemas import (
 
 app = FastAPI(
     title="Gestão de Alunos",
-    version="3.0-base"
+    version="3.0"
 )
 
 
@@ -57,7 +57,7 @@ FRONTEND_DIR = (
 app.mount(
     "/app",
     StaticFiles(
-        directory=FRONTEND_DIR,
+        directory=FRONTEND_DIR / "dist",
         html=True
     ),
     name="frontend"
