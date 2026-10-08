@@ -85,6 +85,7 @@ function PaginaAlunos() {
   );
 
   useEffect(() => {
+    let ativo = true;
     async function carregar() {
       const filtros:
         FiltrosAluno = {};
@@ -121,19 +122,20 @@ function PaginaAlunos() {
             filtros
           );
 
-        setAlunos(dados);
+        if (ativo) setAlunos(dados);
       } catch (erro) {
-        setErro(
+        if (ativo) setErro(
           erro instanceof Error
             ? erro.message
             : "Erro ao carregar alunos."
         );
       } finally {
-        setCarregando(false);
+        if (ativo) setCarregando(false);
       }
     }
 
-    carregar();
+    void carregar();
+    return () => { ativo = false; };
   }, [
     busca,
     idadeMinima,
