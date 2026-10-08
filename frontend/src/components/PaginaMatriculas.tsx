@@ -115,7 +115,10 @@ function PaginaMatriculas({
     setExcluindo,
   ] = useState(false);
 
+  const [erroCarregamento, setErroCarregamento] = useState<string | null>(null);
+
   useEffect(() => {
+    let ativo = true;
     async function carregar() {
       try {
         setCarregando(true);
@@ -130,23 +133,22 @@ function PaginaMatriculas({
           listarMatriculas(),
         ]);
 
-        setAlunos(
-          dadosAlunos
-        );
-
-        setDisciplinas(
-          dadosDisciplinas
-        );
-
-        setMatriculas(
-          dadosMatriculas
+        if (!ativo) return;
+        setAlunos(dadosAlunos);
+        setDisciplinas(dadosDisciplinas);
+        setMatriculas(dadosMatriculas);
+        setErroCarregamento(null);
+      } catch (falha) {
+        if (ativo) setErroCarregamento(
+          falha instanceof Error ? falha.message : "Erro ao carregar os cadastros."
         );
       } finally {
-        setCarregando(false);
+        if (ativo) setCarregando(false);
       }
     }
 
-    carregar();
+    void carregar();
+    return () => { ativo = false; };
   }, []);
 
   const termo =
@@ -317,7 +319,8 @@ function PaginaMatriculas({
 
   return (
     <>
-      <section className="pagina pagina-matriculas">
+      <>{erroCarregamento && <p className="formulario-erro-geral" role="alert">{erroCarregamento}</p>}
+    <section className="pagina pagina-matriculas">
         <header className="pagina-cabecalho">
           <div>
             <span className="pagina-etiqueta">
@@ -493,6 +496,7 @@ function PaginaMatriculas({
           </button>
         </article>
       </section>
+    </>
 
       <NovoAlunoDrawer
         aberto={
