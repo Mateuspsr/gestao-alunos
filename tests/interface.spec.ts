@@ -14,7 +14,7 @@ test("POLAR: login, cadastro, filtros, edição, disciplinas e matrícula", asyn
   await page.getByLabel("Usuário").fill("admin");
   await page.getByLabel("Senha").fill(process.env.ADMIN_PASSWORD ?? "");
   await page.getByRole("button", { name: "Entrar" }).click();
-  await expect(page.locator(".sidebar-brand")).toContainText("POLAR");
+  await expect(page.locator(".sidebar .marca")).toContainText("POLAR");
 
   await page.locator('button[title="Matrículas"]').click();
   await page.getByRole("button", { name: /Nova matrícula/ }).click();
