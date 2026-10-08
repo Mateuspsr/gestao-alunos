@@ -38,7 +38,10 @@ function Dashboard({
     MatriculaDisciplina[]
   >([]);
 
+  const [erro, setErro] = useState("");
+
   useEffect(() => {
+    let ativo = true;
     async function carregar() {
       const [
         dadosDisciplinas,
@@ -48,16 +51,16 @@ function Dashboard({
         listarMatriculas(),
       ]);
 
-      setDisciplinas(
-        dadosDisciplinas
-      );
-
-      setMatriculas(
-        dadosMatriculas
-      );
+      if (!ativo) return;
+      setDisciplinas(dadosDisciplinas);
+      setMatriculas(dadosMatriculas);
+      setErro("");
     }
 
-    carregar();
+    void carregar().catch((falha) => {
+      if (ativo) setErro(falha instanceof Error ? falha.message : "Erro ao carregar indicadores.");
+    });
+    return () => { ativo = false; };
   }, [alunos]);
 
   const totalAlunos =
@@ -124,6 +127,7 @@ function Dashboard({
 
   return (
     <section className="pagina">
+      {erro && <p className="formulario-erro-geral" role="alert">{erro}</p>}
       <header className="pagina-cabecalho">
         <div>
           <span className="pagina-etiqueta">
