@@ -18,9 +18,7 @@ import type {
 interface EstatisticaDisciplina {
   disciplina: Disciplina;
   alunos: number;
-  aprovados: number;
-  reprovados: number;
-  media: number;
+  naoVinculados: number;
 }
 
 function PaginaDisciplinas() {
@@ -92,51 +90,14 @@ function PaginaDisciplinas() {
     carregar();
   }, []);
 
-  const estatisticas:
-    EstatisticaDisciplina[] =
-      disciplinas.map(
-        (disciplina) => {
-          const vinculos =
-            matriculas.filter(
-              (matricula) =>
-                matricula.disciplina_id ===
-                disciplina.id
-            );
-
-          const aprovados =
-            vinculos.filter(
-              (matricula) =>
-                matricula.nota >= 6
-            ).length;
-
-          const reprovados =
-            vinculos.length -
-            aprovados;
-
-          const media =
-            vinculos.length > 0
-              ? vinculos.reduce(
-                  (
-                    soma,
-                    matricula
-                  ) =>
-                    soma +
-                    matricula.nota,
-                  0
-                ) /
-                vinculos.length
-              : 0;
-
-          return {
-            disciplina,
-            alunos:
-              vinculos.length,
-            aprovados,
-            reprovados,
-            media,
-          };
-        }
-      );
+  const estatisticas: EstatisticaDisciplina[] = disciplinas.map((disciplina) => {
+    const quantidade = matriculas.filter((item) => item.disciplina_id === disciplina.id).length;
+    return {
+      disciplina,
+      alunos: quantidade,
+      naoVinculados: alunos.length - quantidade,
+    };
+  });
 
   const disciplinasFiltradas =
     estatisticas.filter(
@@ -158,45 +119,13 @@ function PaginaDisciplinas() {
         )
       : null;
 
-  const alunosDaDisciplina =
-    detalhe
-      ? matriculas
-          .filter(
-            (matricula) =>
-              matricula.disciplina_id ===
-              detalhe.disciplina.id
-          )
-          .map(
-            (matricula) => {
-              const aluno =
-                alunos.find(
-                  (aluno) =>
-                    aluno.id ===
-                    matricula.aluno_id
-                );
-
-              return {
-                aluno,
-                nota:
-                  matricula.nota,
-              };
-            }
-          )
-          .filter(
-            (
-              item
-            ): item is {
-              aluno: Aluno;
-              nota: number;
-            } =>
-              item.aluno !==
-              undefined
-          )
-          .sort(
-            (a, b) =>
-              b.nota - a.nota
-          )
-      : [];
+  const alunosDaDisciplina = detalhe
+    ? matriculas
+        .filter((item) => item.disciplina_id === detalhe.disciplina.id)
+        .map((item) => alunos.find((aluno) => aluno.id === item.aluno_id))
+        .filter((aluno): aluno is Aluno => aluno !== undefined)
+        .sort((a, b) => a.nome.localeCompare(b.nome))
+    : [];
 
   if (carregando) {
     return (
@@ -223,7 +152,7 @@ function PaginaDisciplinas() {
           </h1>
 
           <p>
-            Analise desempenho e
+            Consulte as disciplinas e
             estudantes vinculados
             às disciplinas.
           </p>
@@ -292,26 +221,24 @@ function PaginaDisciplinas() {
 
                 <div>
                   <span>
-                    Média
+                    Carga horária
                   </span>
 
                   <strong>
-                    {item.media.toFixed(
-                      1
-                    )}
+                    {item.disciplina.carga_horaria}
                   </strong>
                 </div>
               </div>
 
               <div className="disciplina-status">
-                <span className="disciplina-aprovados">
-                  {item.aprovados}{" "}
-                  aprovados
+                <span className="disciplina-matriculados">
+                  {item.alunos}{" "}
+                  matriculados
                 </span>
 
-                <span className="disciplina-reprovados">
-                  {item.reprovados}{" "}
-                  reprovados
+                <span className="disciplina-não vinculados">
+                  {item.naoVinculados}{" "}
+                  não vinculados
                 </span>
               </div>
             </button>
@@ -370,7 +297,7 @@ function PaginaDisciplinas() {
 
               <div>
                 <span>
-                  Média
+                  Carga horária
                 </span>
 
                 <strong>
@@ -382,24 +309,24 @@ function PaginaDisciplinas() {
 
               <div>
                 <span>
-                  Aprovados
+                  Matriculados
                 </span>
 
                 <strong className="texto-verde">
                   {
-                    detalhe.aprovados
+                    detalhe.alunos
                   }
                 </strong>
               </div>
 
               <div>
                 <span>
-                  Reprovados
+                  Não vinculados
                 </span>
 
                 <strong className="texto-vermelho">
                   {
-                    detalhe.reprovados
+                    detalhe.naoVinculados
                   }
                 </strong>
               </div>
@@ -419,10 +346,7 @@ function PaginaDisciplinas() {
               </div>
 
               {alunosDaDisciplina.map(
-                ({
-                  aluno,
-                  nota,
-                }) => (
+                (aluno) => (
                   <div
                     className="disciplina-aluno-item"
                     key={aluno.id}
@@ -452,21 +376,8 @@ function PaginaDisciplinas() {
                     </div>
 
                     <div className="disciplina-aluno-nota">
-                      <span>
-                        Nota
-                      </span>
-
-                      <strong
-                        className={
-                          nota >= 6
-                            ? "texto-verde"
-                            : "texto-vermelho"
-                        }
-                      >
-                        {nota.toFixed(
-                          1
-                        )}
-                      </strong>
+                      <span>Média geral do aluno</span>
+                      <strong>{aluno.media.toFixed(1)}</strong>
                     </div>
                   </div>
                 )
