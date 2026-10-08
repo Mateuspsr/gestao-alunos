@@ -1,7 +1,7 @@
 name: Verificar aplicação
 on:
   push:
-    branches: [modulo-iii, modulo-iii-react]
+    branches: [modulo-iii, modulo-iii-react, integracao-polar-original]
   pull_request:
     branches: [modulo-iii]
 
