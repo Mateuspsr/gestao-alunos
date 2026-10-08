@@ -69,3 +69,10 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Testar interface original no navegador
         run: npx playwright test tests/interface.spec.ts --workers=1 --reporter=line
+      - name: Guardar captura do POLAR
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: captura-polar
+          path: capturas/polar-dashboard.png
+          if-no-files-found: warn
