@@ -165,41 +165,11 @@ function PaginaMatriculas({
           .includes(termo)
     );
 
-  function disciplinasDoAluno(
-    alunoId: number
-  ) {
+  function disciplinasDoAluno(alunoId: number) {
     return matriculas
-      .filter(
-        (matricula) =>
-          matricula.aluno_id ===
-          alunoId
-      )
-      .map(
-        (matricula) => {
-          const disciplina =
-            disciplinas.find(
-              (disciplina) =>
-                disciplina.id ===
-                matricula.disciplina_id
-            );
-
-          return {
-            disciplina,
-            nota:
-              matricula.nota,
-          };
-        }
-      )
-      .filter(
-        (
-          item
-        ): item is {
-          disciplina: Disciplina;
-          nota: number;
-        } =>
-          item.disciplina !==
-          undefined
-      );
+      .filter((vinculo) => vinculo.aluno_id === alunoId)
+      .map((vinculo) => disciplinas.find((item) => item.id === vinculo.disciplina_id))
+      .filter((disciplina): disciplina is Disciplina => disciplina !== undefined);
   }
 
   function alunoCriado(
@@ -776,10 +746,7 @@ function PaginaMatriculas({
                       {disciplinasDoAluno(
                         alunoExclusao.id
                       ).map(
-                        ({
-                          disciplina,
-                          nota,
-                        }) => (
+                        (disciplina) => (
                           <div
                             key={
                               disciplina.id
@@ -791,17 +758,7 @@ function PaginaMatriculas({
                               }
                             </span>
 
-                            <strong
-                              className={
-                                nota >= 6
-                                  ? "texto-verde"
-                                  : "texto-vermelho"
-                              }
-                            >
-                              {nota.toFixed(
-                                1
-                              )}
-                            </strong>
+                            <strong>{disciplina.carga_horaria} h</strong>
                           </div>
                         )
                       )}
