@@ -7,6 +7,7 @@ import {
   listarAlunos,
   listarDisciplinas,
   listarMatriculas,
+  matricularAluno,
 } from "../api";
 
 import type {
@@ -56,6 +57,29 @@ function PaginaDisciplinas() {
     setCarregando,
   ] = useState(true);
 
+  const [alunoId, setAlunoId] = useState("");
+  const [disciplinaId, setDisciplinaId] = useState("");
+  const [enviando, setEnviando] = useState(false);
+  const [mensagem, setMensagem] = useState("");
+  const [erro, setErro] = useState("");
+
+  async function registrarMatricula(evento: React.FormEvent<HTMLFormElement>) {
+    evento.preventDefault();
+    if (!alunoId || !disciplinaId || enviando) return;
+    setEnviando(true);
+    setErro("");
+    setMensagem("");
+    try {
+      await matricularAluno(Number(alunoId), Number(disciplinaId));
+      setMatriculas(await listarMatriculas());
+      setMensagem("Matrícula registrada. O vínculo também é mantido após atualizar a página.");
+    } catch (falha) {
+      setErro(falha instanceof Error ? falha.message : "Não foi possível registrar a matrícula.");
+    } finally {
+      setEnviando(false);
+    }
+  }
+
   useEffect(() => {
     async function carregar() {
       try {
@@ -82,6 +106,8 @@ function PaginaDisciplinas() {
         setMatriculas(
           dadosMatriculas
         );
+      } catch (falha) {
+        setErro(falha instanceof Error ? falha.message : "Erro ao carregar disciplinas.");
       } finally {
         setCarregando(false);
       }
@@ -159,6 +185,35 @@ function PaginaDisciplinas() {
         </div>
       </header>
 
+      <form className="painel-matriculas" onSubmit={registrarMatricula}>
+        <h2>Matricular aluno em uma disciplina</h2>
+        <div className="formulario-duas-colunas">
+          <label>
+            <span>Aluno</span>
+            <select value={alunoId} onChange={(evento) => setAlunoId(evento.target.value)} required>
+              <option value="">Selecione um aluno</option>
+              {alunos.map((aluno) => (
+                <option key={aluno.id} value={aluno.id}>{aluno.nome} — {aluno.matricula}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <span>Disciplina</span>
+            <select value={disciplinaId} onChange={(evento) => setDisciplinaId(evento.target.value)} required>
+              <option value="">Selecione uma disciplina</option>
+              {disciplinas.map((disciplina) => (
+                <option key={disciplina.id} value={disciplina.id}>{disciplina.nome}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <button type="submit" className="botao-secundario" disabled={enviando}>
+          {enviando ? "Registrando..." : "Registrar matrícula"}
+        </button>
+        {mensagem && <p className="formulario-sucesso" role="status">{mensagem}</p>}
+        {erro && <p className="formulario-erro-geral" role="alert">{erro}</p>}
+      </form>
+
       <div className="campo-busca busca-disciplinas">
         <span>⌕</span>
 
@@ -231,12 +286,12 @@ function PaginaDisciplinas() {
               </div>
 
               <div className="disciplina-status">
-                <span className="disciplina-matriculados">
+                <span className="disciplina-aprovados">
                   {item.alunos}{" "}
                   matriculados
                 </span>
 
-                <span className="disciplina-não vinculados">
+                <span className="disciplina-reprovados">
                   {item.naoVinculados}{" "}
                   não vinculados
                 </span>
