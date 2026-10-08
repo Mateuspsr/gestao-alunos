@@ -11,7 +11,8 @@ from fastapi import (
 )
 
 from fastapi.responses import (
-    RedirectResponse
+    RedirectResponse,
+    HTMLResponse,
 )
 
 from fastapi.security import (
@@ -55,14 +56,24 @@ FRONTEND_DIR = (
 )
 
 
-app.mount(
-    "/app",
-    StaticFiles(
-        directory=FRONTEND_DIR / "dist",
-        html=True
-    ),
-    name="frontend"
-)
+ARQUIVOS_FRONTEND = FRONTEND_DIR / "dist"
+
+if ARQUIVOS_FRONTEND.is_dir():
+    app.mount(
+        "/app",
+        StaticFiles(directory=ARQUIVOS_FRONTEND, html=True),
+        name="frontend",
+    )
+else:
+    @app.get("/app/", include_in_schema=False, response_class=HTMLResponse)
+    def frontend_nao_compilado():
+        return HTMLResponse(
+            "<h1>Frontend ainda não compilado</h1>"
+            "<p>Execute na pasta frontend: "
+            "<code>npm install && npm run build</code>.</p>"
+            "<p>Para desenvolvimento, use <code>npm run dev</code>.</p>",
+            status_code=503,
+        )
 
 
 @app.on_event("startup")
