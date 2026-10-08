@@ -356,9 +356,7 @@ function PaginaDisciplinas() {
                 </span>
 
                 <strong>
-                  {detalhe.media.toFixed(
-                    1
-                  )}
+                  {detalhe.disciplina.carga_horaria}
                 </strong>
               </div>
 
