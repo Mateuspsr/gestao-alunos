@@ -80,3 +80,8 @@ class TokenSaida(BaseModel):
 class UsuarioSaida(BaseModel):
     id: int
     username: str
+
+class MatriculaSaida(BaseModel):
+    id: int
+    aluno_id: int
+    disciplina_id: int
