@@ -9,7 +9,7 @@ import {
 
 import type {
   Aluno,
-  AlunoEntrada,
+  AlunoAtualizacao,
 } from "../types";
 
 interface EditarAlunoDrawerProps {
@@ -39,7 +39,7 @@ function EditarAlunoDrawer({
 
   const [idade, setIdade] =
     useState(
-      String(aluno.idade)
+      String(aluno.idade ?? "")
     );
 
   const [media, setMedia] =
@@ -74,7 +74,7 @@ function EditarAlunoDrawer({
       aluno.matricula
     );
     setIdade(
-      String(aluno.idade)
+      String(aluno.idade ?? "")
     );
     setMedia(
       String(aluno.media)
@@ -185,12 +185,9 @@ function EditarAlunoDrawer({
     }
 
     const dados:
-      AlunoEntrada = {
+      AlunoAtualizacao = {
         nome:
           nome.trim(),
-
-        matricula:
-          matricula.trim(),
 
         idade:
           Number(idade),
@@ -310,11 +307,7 @@ function EditarAlunoDrawer({
               value={
                 matricula
               }
-              onChange={(evento) =>
-                setMatricula(
-                  evento.target.value
-                )
-              }
+              readOnly
               placeholder="Número da matrícula"
             />
 
