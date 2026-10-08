@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class AlunoEntrada(BaseModel):
@@ -26,6 +26,13 @@ class AlunoEntrada(BaseModel):
         le=10
     )
 
+    @field_validator("nome", "matricula")
+    @classmethod
+    def validar_identificacao(cls, valor: str) -> str:
+        if not valor.strip():
+            raise ValueError("Informe um valor não vazio.")
+        return valor.strip()
+
 
 class AlunoAtualizacao(BaseModel):
     nome: Optional[str] = Field(
@@ -46,6 +53,13 @@ class AlunoAtualizacao(BaseModel):
         le=10
     )
 
+    @field_validator("nome")
+    @classmethod
+    def validar_nome(cls, valor: str | None) -> str | None:
+        if valor is not None and not valor.strip():
+            raise ValueError("Informe um nome não vazio.")
+        return valor.strip() if valor is not None else None
+
 
 class AlunoSaida(BaseModel):
     id: int
@@ -64,6 +78,13 @@ class DisciplinaEntrada(BaseModel):
     carga_horaria: int = Field(
         gt=0
     )
+
+    @field_validator("nome")
+    @classmethod
+    def validar_nome(cls, valor: str) -> str:
+        if not valor.strip():
+            raise ValueError("Informe o nome da disciplina.")
+        return valor.strip()
 
 
 class DisciplinaSaida(BaseModel):
