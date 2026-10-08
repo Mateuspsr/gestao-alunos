@@ -4,26 +4,21 @@ services:
     runtime: python
     plan: free
     branch: modulo-iii
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install -r requirements.txt && npm install --prefix frontend && npm run build --prefix frontend
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     autoDeployTrigger: commit
-
     envVars:
       - key: DATABASE_URL
         fromDatabase:
           name: gestao-alunos-db
           property: connectionString
-
       - key: JWT_SECRET
         generateValue: true
-
       - key: ACCESS_TOKEN_EXPIRE_MINUTES
         value: "60"
-
       - key: ADMIN_USERNAME
         value: admin
-
       - key: ADMIN_PASSWORD
         sync: false
 
