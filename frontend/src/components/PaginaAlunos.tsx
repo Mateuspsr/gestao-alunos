@@ -240,9 +240,9 @@ function PaginaAlunos() {
           </h1>
 
           <p>
-            Consulte informações,
-            desempenho e boletim
-            dos estudantes.
+            Consulte os cadastros,
+            o desempenho geral e as
+            disciplinas dos estudantes.
           </p>
         </div>
       </header>
@@ -253,7 +253,7 @@ function PaginaAlunos() {
 
           <input
             type="search"
-            placeholder="Buscar por nome ou matrícula..."
+            placeholder="Buscar por nome..."
             value={busca}
             onChange={(evento) =>
               setBusca(
